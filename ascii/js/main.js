@@ -48,7 +48,7 @@ const ACH = {
 };
 const NEED = 5;
 
-const DEFAULTS = () => ({ cs:'unicode', preset:'system', custom:{}, fx:{ stars:true, space:true, sparks:true, crt:false, glow:false }, open:{}, hs:{}, ach:{}, played:{}, matrix:false, recruiter:false });
+const DEFAULTS = () => ({ cs:'unicode', mode:'auto', preset:'system', custom:{}, fx:{ stars:true, space:true, sparks:true, crt:false, glow:false }, open:{}, hs:{}, ach:{}, played:{}, matrix:false, recruiter:false });
 let S = DEFAULTS();
 try {
   const s = JSON.parse(localStorage.getItem('ascii-portfolio') || 'null');
@@ -125,7 +125,6 @@ const D = t => ({ t, c:'b', deco:true });
 const B = (t, act, c, pressed) => ({ k:'b', t, act, c, pressed });
 const A = (t, href) => ({ k:'a', t, href });
 const L = (t, forId) => ({ k:'l', t, for: forId });
-const I = (id, n, ph) => ({ k:'i', id, t:' '.repeat(n), ph });
 const R = (html, n) => ({ k:'r', html, t:' '.repeat(n) });
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 const len = line => line.reduce((n, s) => n + s.t.length, 0);
@@ -139,7 +138,6 @@ function segHTML(s) {
     case 'b': return `<button type="button" class="lk ${s.c||''}" data-act="${esc(s.act)}"${s.pressed!==undefined?` aria-pressed="${s.pressed}"`:''}>${t}</button>`;
     case 'a': return `<a class="lk" href="${esc(s.href)}" target="_blank" rel="noopener">${t}</a>`;
     case 'l': return `<label class="lk" for="${s.for}">${t}</label>`;
-    case 'i': return `<input id="${s.id}" class="fi" style="width:${s.t.length}ch" autocomplete="off" aria-label="${esc(s.ph)}" placeholder="${esc(s.ph)}">`;
     case 'r': return s.html;
     default: return s.c ? `<span class="${s.c}"${s.deco?' aria-hidden="true"':''}>${t}</span>` : t;
   }
@@ -253,7 +251,11 @@ function themeBox(W) {
   const iw = W - 4, c = CS[S.cs], lw = 9;
   const radio = (on, label, act) => B(`(${on ? c.on : ' '}) ${label}`, act, on ? 'hi' : '', on);
   const check = (key, label) => B(`[${S.fx[key] ? 'x' : ' '}] ${label}`, 'fx:' + key, S.fx[key] ? 'hi' : '', S.fx[key]);
-  const body = [];
+  const body = [], close = B('[ esc ]', 'tclose');
+  body.push([T('colors & effects', 'hi'), T(' '.repeat(Math.max(1, iw - 16 - close.t.length))), close]);
+  body.push([]);
+  const plain = S.preset === 'system' && !Object.keys(S.custom).length;
+  body.push(...labeled('mode', lw, flow(['auto','dark','light'].map(m => radio(plain && S.mode === m, m, 'mode:' + m)), iw - lw)));
   body.push(...labeled('preset', lw, flow(['system','phosphor','amber','ice','paper'].map(p => radio(S.preset === p && !Object.keys(S.custom).length, p, 'preset:' + p)), iw - lw)));
   body.push(...labeled('charset', lw, flow([radio(S.cs === 'unicode', 'unicode', 'cs:unicode'), radio(S.cs === 'ascii', 'ascii 7-bit', 'cs:ascii')], iw - lw)));
   body.push(...labeled('effects', lw, flow([check('stars','stars'), check('space','space'), check('sparks','sparks'), check('crt','crt'), check('glow','glow')], iw - lw)));
@@ -267,7 +269,7 @@ function themeBox(W) {
   body.push([]);
   const note = Object.keys(S.custom).length ? 'custom colors · saved in this browser' : 'saved in this browser';
   body.push(...flow([B('[ reset ]', 'reset'), T(note, 'dim')], iw));
-  return box('theme', body, W, 'theme');
+  return box('theme', body, W);
 }
 
 function build(W) {
@@ -285,11 +287,10 @@ function build(W) {
   push([T('aryan@zaragoza', 'acc'), T(':', 'dim'), T('~', 'hi'), T('$ ', 'dim'), R(`<span id="typed"></span><span class="cur" aria-hidden="true">${c.blk}</span>`, 1)]);
   push([T('in a hurry? ', 'dim'), B('[ recruiter mode ]', 'recruiter'), T(' plain cv, no games', 'dim')]);
   blank();
-  push(...flow(['play','theme','about','experience','skills','timeline','contact'].map(n => B(`[ ${n} ]`, n === 'play' ? 'arcade' : 'go:' + n)), W, 1));
+  push(...flow(['play','about','experience','skills','timeline','contact'].map(n => B(`[ ${n} ]`, n === 'play' ? 'arcade' : 'go:' + n)), W, 1));
   blank();
 
   push(...gameBox(W)); blank();
-  push(...themeBox(W)); blank();
 
   // about
   const about = [
@@ -343,12 +344,7 @@ function build(W) {
   const fw = iw - 9;
   const contact = [
     ...LINKS.map(([k, href, label]) => [T(k.padEnd(9), 'dim'), A(label.slice(0, fw), href)]),
-    [T('email'.padEnd(9), 'dim'), T(EMAIL, 'hi'), T('  '), B(msg.copy ? '[ copied ]' : '[ copy ]', 'copy')],
-    [],
-    [T('name'.padEnd(9), 'dim'), I('f-name', Math.min(28, fw), 'your name')],
-    [T('message'.padEnd(9), 'dim'), I('f-msg', fw, 'what are you building?')],
-    [],
-    [T(' '.repeat(9)), B('[ send ]', 'send'), ...(msg.send ? [T('  '), T(msg.send.slice(0, Math.max(0, fw - 10)), 'dim')] : [])]
+    [T('email'.padEnd(9), 'dim'), T(EMAIL, 'hi'), T('  '), B(msg.copy ? '[ copied ]' : '[ copy ]', 'copy')]
   ];
   push(...box('contact', contact, W, 'contact')); blank();
 
@@ -392,7 +388,84 @@ function render() {
   bgSize();
   spaceLayout();
   if (ARC.open && ARC.view === 'menu') { arcadeSize(); arcadeRender(); }
+  if (MODAL) modalRender();
 }
+
+/* ---------- modal for the floating buttons: theme or curiosities ---------- */
+const themerEl = document.getElementById('themer'), tscr = document.getElementById('tscreen');
+const fabsEl = document.getElementById('fabs'), themeBtn = document.getElementById('themeBtn'), factsBtn = document.getElementById('factsBtn');
+let MODAL = null;
+// every visible character of the page becomes a particle in the background grid, flung from the center
+function nuke() {
+  if (root.classList.contains('nuked')) return;
+  if (motion) {
+    const r = scr.getBoundingClientRect(), cx = innerWidth / 2 / CW, cy = innerHeight / 2 / LH, ratio = CW / LH;
+    const heat = [CI.qso, CI.qs, CI.qh, CI.qh, CI.q];
+    scr.textContent.split('\n').forEach((ln, i) => {
+      const y = (r.top + i * LH) / LH + 0.5;
+      if (y < 0 || y > BG.rows) return;
+      for (let j = 0; j < ln.length; j++) {
+        const x = (r.left + j * CW) / CW + 0.5;
+        if (ln[j] === ' ' || x > BG.cols) continue;
+        const a = Math.atan2((y - cy) / ratio, x - cx) + (Math.random() - .5) * 0.5, sp = 18 + Math.random() * 40, life = 1.4 + Math.random() * 1.2;
+        BG.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * ratio, g: 0, life, max: life, ch: ln[j], k: heat[rand(heat.length)] });
+      }
+    });
+  }
+  root.classList.add('nuked');
+  setTimeout(() => {
+    root.classList.remove('nuked');
+    scr.classList.remove('rebuild'); void scr.offsetWidth; scr.classList.add('rebuild');
+  }, motion ? 2600 : 600);
+}
+
+function factsBox(W) {
+  const iw = W - 4, close = B('[ esc ]', 'tclose'), dot = S.cs === 'ascii' ? '* ' : '· ';
+  const facts = [
+    'no images: everything you see is text characters. the counter in the footer tallies them live.',
+    'the page measures your screen in character columns and redraws every box to fit.',
+    "the moon shows tonight's real phase, counted from a known new moon in january 2000.",
+    'in light mode the sun follows your clock: low and orange at sunrise and sunset, gold at midday. outside 7am to 7pm you get the moon.',
+    'each planet scrolls at its own speed, and their spacing is worked out so they never run into each other.',
+    'click the moon, a planet or the galaxy for a fact. click them all for an achievement.',
+    `the arcade has ${GAME_ORDER.length - 1} games built from the cv, plus a hidden one that unlocks after ${NEED} achievements.`,
+    'in the shell game, try ls, cat and neofetch. sudo hire me does what you would hope.',
+    'the konami code (up up down down left right left right b a) turns on matrix rain.',
+    'switch the charset to ascii 7-bit and every box, planet and game redraws with plain keyboard characters.',
+    'a satellite crosses the sky every now and then. so do comets.',
+    'recruiter mode strips it all down to a plain cv you can copy as text. link straight to it with #recruiter.',
+    'some shell commands are more dangerous than others.',
+    'type boom anywhere on the page. you have been warned.',
+    'your theme, high scores and achievements are saved only in this browser.'
+  ];
+  const body = [[T('things you might not notice', 'hi'), T(' '.repeat(Math.max(1, iw - 27 - close.t.length))), close], []];
+  facts.forEach((f, i) => {
+    if (i) body.push([]);
+    wrap(f, iw - 2).forEach((l, j) => body.push([T(j ? '  ' : dot, 'acc'), T(l)]));
+  });
+  return box('curiosities', body, W);
+}
+function modalRender() {
+  const ae = document.activeElement, active = ae && tscr.contains(ae) ? ae.dataset.act || ae.htmlFor : null;
+  tscr.setAttribute('aria-label', MODAL === 'theme' ? 'Theme' : 'Curiosities');
+  tscr.innerHTML = toHTML(MODAL === 'theme' ? themeBox(Math.min(W, 72)) : factsBox(Math.min(W, 72)));
+  const el = active && tscr.querySelector(`[data-act="${active}"], [for="${active}"]`);
+  if (el) el.focus({ preventScroll: true });
+}
+function openModal(kind) {
+  MODAL = kind; themerEl.hidden = false; document.body.style.overflow = 'hidden';
+  modalRender();
+  const b = tscr.querySelector('[data-act]'); if (b) b.focus({ preventScroll: true });
+}
+function closeModal() {
+  const btn = MODAL === 'theme' ? themeBtn : factsBtn;
+  MODAL = null; themerEl.hidden = true; document.body.style.overflow = '';
+  btn.focus({ preventScroll: true });
+}
+themeBtn.addEventListener('click', () => openModal('theme'));
+factsBtn.addEventListener('click', () => openModal('facts'));
+themerEl.addEventListener('click', e => { if (e.target === themerEl) closeModal(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && MODAL) { e.preventDefault(); closeModal(); } });
 
 /* ---------- theme ---------- */
 function toHex(v) {
@@ -406,6 +479,9 @@ function lum(hex) {
   return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
 }
 function applyTheme() {
+  // dark/light only switches the default palette in the CSS; presets bring their own colors
+  const mode = S.mode === 'dark' || S.mode === 'light' ? S.mode : null;
+  if (root.getAttribute('data-theme') !== mode) mode ? root.setAttribute('data-theme', mode) : root.removeAttribute('data-theme');
   KEYS.forEach(([k]) => root.style.removeProperty('--' + k));
   root.style.colorScheme = '';
   const vals = Object.assign({}, PRESETS[S.preset] || {}, S.custom);
@@ -416,6 +492,7 @@ function applyTheme() {
   }
   root.classList.toggle('glow', !!S.fx.glow && !S.recruiter);
   root.classList.toggle('crt', !!S.fx.crt && !S.recruiter);
+  fabsEl.hidden = !!S.recruiter;
 }
 
 /* ---------- achievements ---------- */
@@ -1166,6 +1243,12 @@ function shKids(p, all) {
   return [...set].sort();
 }
 const shSay = (s, t, k = '') => String(t).split('\n').forEach(l => s.out.push({ t: l, k }));
+// rm -rf / blows up the page; any other rm is refused
+function shRm(s, args) {
+  if (!args.some(a => /^-(rf|fr)$/.test(a)) || !args.some(a => a === '/' || a === '/*')) { shSay(s, 'nice try.', 'hi'); return; }
+  shSay(s, 'removing everything...', 'hi');
+  setTimeout(() => { closeArcade(); nuke(); }, 700);
+}
 const shPrompt = s => `aryan@zaragoza:${s.cwd}$`;
 GAMES.shell = {
   name:'shell', blurb:'explore the cv as a filesystem', help:'try help, ls, cd experience, cat about.txt. tab completes, up recalls the last command.', text:true, ph:'type a command',
@@ -1236,9 +1319,10 @@ function shRun(s, line) {
       if (/hire/.test(args.join(' '))) {
         shSay(s, '[sudo] permission granted. opening contact...', 'acc');
         setTimeout(() => { closeArcade(); const el = document.getElementById('s-contact'); if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); }, 900);
-      } else shSay(s, 'aryan is not in the sudoers file. this incident will be reported.', 'hi');
+      } else if (args[0] === 'rm') shRm(s, args.slice(1));
+      else shSay(s, 'aryan is not in the sudoers file. this incident will be reported.', 'hi');
       break;
-    case 'rm': shSay(s, 'nice try.', 'hi'); break;
+    case 'rm': shRm(s, args); break;
     case 'exit': case 'quit': ARC.view = 'menu'; ARC.s = null; arcadeRender(); focusSel(); return;
     default: shSay(s, `command not found: ${cmd}. try help`, 'hi');
   }
@@ -1682,9 +1766,9 @@ function stepScrambles(now) {
 }
 
 /* ---------- space journey: moon, planets, nebulae along the scroll ---------- */
-const BGC = ['', 'p', 'm', 'mh', 'n', 'n2', 'q', 'qa', 'qh', 'qd', 'qad', 'qhd', 'ql'];
-const CI = { q:6, qa:7, qh:8, n:4, n2:5, ql:12, p:1 };
-const dimc = (k, dim) => dim ? ({ q:9, qa:10, qh:11 }[k] || CI[k]) : CI[k];
+const BGC = ['', 'p', 'm', 'mh', 'n', 'n2', 'q', 'qa', 'qh', 'qd', 'qad', 'qhd', 'ql', 'qr', 'qrd', 'qs', 'qso'];
+const CI = { q:6, qa:7, qh:8, n:4, n2:5, ql:12, p:1, qr:13, qs:15, qso:16 };
+const dimc = (k, dim) => dim ? ({ q:9, qa:10, qh:11, qr:14 }[k] || CI[k]) : CI[k];
 function hash2(x, y) { let h = Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
 function vnoise(x, y) {
   const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
@@ -1693,6 +1777,12 @@ function vnoise(x, y) {
 }
 const fbm = (x, y) => vnoise(x, y) * 0.6 + vnoise(x * 2.1, y * 2.1) * 0.3 + vnoise(x * 4.3, y * 4.3) * 0.1;
 function moonPhase() { const syn = 29.530588853, ref = Date.UTC(2000, 0, 6, 18, 14) / 86400000, d = Date.now() / 86400000 - ref; return (((d % syn) + syn) % syn) / syn; }
+// the sun follows the visitor's clock: up from 7:00 to 19:00, highest at 13:00
+// ponytail: fixed daylight hours, real sunrise/sunset would need the visitor's location
+function sunNow() {
+  const d = new Date(), h = d.getHours() + d.getMinutes() / 60, t = (h - 7) / 12;
+  return { day: t >= 0 && t < 1, t, e: Math.sin(Math.PI * clamp(t, 0, 1)), time: d.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) };
+}
 function moonName(p) {
   if (p < 0.03 || p > 0.97) return 'new moon';
   if (p < 0.22) return 'waxing crescent'; if (p < 0.28) return 'first quarter'; if (p < 0.47) return 'waxing gibbous';
@@ -1700,7 +1790,7 @@ function moonName(p) {
 }
 const FACTS = {
   moon: () => { const p = moonPhase(); return `the moon tonight · ${moonName(p)} · ${Math.round((1 - Math.cos(2 * Math.PI * p)) / 2 * 100)}% lit`; },
-  sun: () => 'the sun · light mode is daytime',
+  sun: () => { const s = sunNow(); return `the sun · ${s.time}, ${s.t < 0.3 ? 'rising' : s.t > 0.7 ? 'setting' : 'high in the sky'}`; },
   mars: () => 'mars · home of Olympus Mons, the tallest volcano in the solar system',
   jupiter: () => 'jupiter · the great red spot is a storm wider than earth',
   saturn: () => 'saturn · its rings are mostly water ice',
@@ -1715,33 +1805,39 @@ function spaceLayout() {
   const r = document.getElementById('main').getBoundingClientRect();
   SP.cl = (r.left + 16) / CW; SP.cr = (r.right - 16) / CW;
   SP.light = lum(toHex(getComputedStyle(root).getPropertyValue('--bg').trim())) > 0.5;
+  SP.sun = SP.light && sunNow().day ? sunNow() : null;
   const k = BG.cols < 70 ? 0.72 : 1, n = v => Math.max(3, Math.round(v * k));
+  // each body has its own parallax speed (f) and horizontal offset (u)
   SP.bodies = [
-    { id:'moon', frac:0, f:.35, side:'right', rx:n(7) },
-    { id:'mars', frac:.15, f:.45, side:'left', rx:n(5) },
-    { id:'jupiter', frac:.42, f:.45, side:'right', rx:n(12) },
-    { id:'saturn', frac:.63, f:.45, side:'left', rx:n(6) },
-    { id:'neptune', frac:.83, f:.45, side:'right', rx:n(5) },
-    { id:'galaxy', frac:1, f:.45, side:'left', rx:n(18) }
+    { id:'moon', frac:0, f:.35, side:'right', rx:n(7), u:.5 },
+    { id:'mars', frac:.15, f:.45, side:'left', rx:n(5), u:.2 },
+    { id:'jupiter', frac:.4, f:.6, side:'right', rx:n(12), u:.75 },
+    { id:'saturn', frac:.62, f:.5, side:'left', rx:n(6), u:.85 },
+    { id:'neptune', frac:.8, f:.36, side:'right', rx:n(5), u:.15 },
+    { id:'galaxy', frac:1, f:.26, side:'left', rx:n(18), u:.5 }
   ];
-  // same parallax for every planet so they never overtake each other, then keep a gap on each side
   const Rr = RATIO();
   SP.bodies.forEach(o => {
     o.vh = (o.id === 'galaxy' ? o.rx * 0.6 : o.rx) * Rr;
+    o.half = o.id === 'galaxy' ? o.rx : o.id === 'saturn' ? o.rx * 2.3 : o.rx;
+    o.cx = bodyX(o.side, o.half + 1, o.id === 'moon', o.u);
     o.wy = o.frac * SP.ms * o.f + SP.vr * 0.5;
   });
-  ['left', 'right'].forEach(side => {
-    const list = SP.bodies.filter(o => o.side === side && o.id !== 'moon').sort((a, b) => a.wy - b.wy);
-    for (let i = 1; i < list.length; i++) {
-      const min = list[i - 1].wy + list[i - 1].vh + list[i].vh + 4;
-      if (list[i].wy < min) list[i].wy = min;
-    }
-    const limit = SP.ms * 0.45 + SP.vr * 0.62;
-    for (let i = list.length - 1; i >= 0; i--) {
-      const cap = i === list.length - 1 ? limit : list[i + 1].wy - list[i + 1].vh - list[i].vh - 4;
-      if (list[i].wy > cap) list[i].wy = cap;
-    }
-  });
+  // moon/sun sits at the top; the sun sinks up to 9 rows toward sunrise and sunset, rays add room
+  const top = SP.bodies[0];
+  if (SP.sun) { top.vh = (top.rx + 3) * Rr; top.half = top.rx + 3; top.cx = bodyX('right', top.half + 1, true); }
+  top.wy = top.vh + 2.5 + (SP.sun ? (1 - SP.sun.e) * 9 : 0);
+  // screen y is wy - scroll * f, linear in scroll, so a gap that holds at the top and the bottom
+  // of the page holds everywhere in between. Only bodies sharing columns can collide.
+  const list = SP.bodies;
+  const near = (a, b) => Math.abs(a.cx - b.cx) < a.half + b.half + 3;
+  const need = (a, b) => a.vh + b.vh + 4 + Math.max(0, SP.ms * (b.f - a.f));
+  for (let j = 1; j < list.length; j++)
+    for (let i = 0; i < j; i++) if (near(list[i], list[j])) list[j].wy = Math.max(list[j].wy, list[i].wy + need(list[i], list[j]));
+  for (let i = list.length - 1; i >= 1; i--) {
+    list[i].wy = Math.min(list[i].wy, SP.ms * list[i].f + SP.vr * 0.62);
+    for (let j = i + 1; j < list.length; j++) if (near(list[i], list[j])) list[i].wy = Math.min(list[i].wy, list[j].wy - need(list[i], list[j]));
+  }
   SP.neb = [
     { frac:.06, f:.22, side:'left', rx:n(36), ry:9 * k + 2, seed:1 },
     { frac:.5, f:.22, side:'right', rx:n(42), ry:11 * k + 2, seed:2 },
@@ -1760,10 +1856,11 @@ function spaceLayout() {
   }
   if (!motion) bgStep(0, 0);
 }
-function bodyX(side, half, fit) {
-  const ml = SP.cl, mr = BG.cols - SP.cr;
-  if (side === 'left') return ml >= half * 2 + 2 ? ml / 2 : (fit ? half + 1 : half * 0.45);
-  return mr >= half * 2 + 2 ? SP.cr + mr / 2 : (fit ? BG.cols - half - 2 : BG.cols - half * 0.45);
+function bodyX(side, half, fit, u = 0.5) {
+  const m = side === 'left' ? SP.cl : BG.cols - SP.cr;
+  // inset from the screen edge: anywhere inside a wide margin, otherwise partly off screen
+  const inset = m >= half * 2 + 2 ? half + 1 + u * (m - half * 2 - 2) : fit ? half + 1 : half * (0.25 + 0.6 * u);
+  return side === 'left' ? inset : BG.cols - inset - (fit ? 1 : 0);
 }
 function spaceNebula(set, t, sy) {
   const ramp = S.cs === 'ascii' ? [':', '.', '.'] : [':', '·', '.'];
@@ -1803,13 +1900,12 @@ function spaceBodies(set, t, sy, dt) {
     b.rocks.forEach(r => { r.x -= r.v * dt; if (r.x < 0) r.x += BG.cols; set(r.x, by + r.dy, rch[r.i], CI.q); });
   }
   for (const o of SP.bodies) {
-    const isSat = o.id === 'saturn', half = o.id === 'galaxy' ? o.rx : isSat ? o.rx * 2.3 : o.rx;
-    const vh = (o.id === 'galaxy' ? o.rx * 0.6 : isSat ? o.rx : o.rx) * R;
-    const cy = o.id === 'moon' ? (o.rx * R + 2.5) - sy * o.f : o.wy - sy * o.f;
+    const half = o.half, vh = o.vh;
+    const cy = o.wy - sy * o.f;
     if (cy + vh + 2 < 0 || cy - vh - 2 > BG.rows) continue;
-    const cx = bodyX(o.side, half + 1, o.id === 'moon');
+    const cx = o.cx;
     const dim = o.id !== 'moon' && cx + half > SP.cl && cx - half < SP.cr;
-    const id = o.id === 'moon' && SP.light ? 'sun' : o.id;
+    const id = o.id === 'moon' && SP.sun ? 'sun' : o.id;
     if (id === 'moon') {
       const p = moonPhase(), ry = o.rx * R;
       for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - o.rx); x <= Math.ceil(cx + o.rx); x++) {
@@ -1822,18 +1918,19 @@ function spaceBodies(set, t, sy, dt) {
         else set(x, y, d > 0.85 ? '.' : ' ', CI.n2);
       }
     } else if (id === 'sun') {
-      drawSphere(set, cx, cy, o.rx, () => ({ v: 1, k: 'qa' }), false);
+      const warm = SP.sun.e < 0.4 ? 'qso' : 'qs';
+      drawSphere(set, cx, cy, o.rx, () => ({ v: 1, k: warm }), false);
       const rays = S.cs === 'ascii' ? ['-', '\\', '|', '/'] : ['─', '╲', '│', '╱'];
       for (let a = 0; a < 8; a++) {
         const ang = a * Math.PI / 4, ext = 1.6 + (Math.sin(mt * 2 + a) > 0 ? 1 : 0);
-        for (let k = 1.4; k <= ext + 0.6; k += 1) set(cx + Math.cos(ang) * (o.rx + k), cy + Math.sin(ang) * (o.rx + k) * R, rays[a % 4], CI.qa);
+        for (let k = 1.4; k <= ext + 0.6; k += 1) set(cx + Math.cos(ang) * (o.rx + k), cy + Math.sin(ang) * (o.rx + k) * R, rays[a % 4], CI[warm]);
       }
     } else if (id === 'mars') {
-      drawSphere(set, cx, cy, o.rx, (lon, lat) => ({ v: 0.55 + 0.9 * (fbm((lon + mt * 0.12) * 1.6 + 3, lat * 2 + 7) - 0.5), k: Math.abs(lat) > 1.15 ? 'qh' : 'qa' }), dim);
+      drawSphere(set, cx, cy, o.rx, (lon, lat) => ({ v: 0.55 + 0.9 * (fbm((lon + mt * 0.12) * 1.6 + 3, lat * 2 + 7) - 0.5), k: Math.abs(lat) > 1.15 ? 'qh' : 'qr' }), dim);
     } else if (id === 'jupiter') {
       drawSphere(set, cx, cy, o.rx, (lon, lat) => {
         const L = lon + mt * 0.07, sl = Math.atan2(Math.sin(L - 2), Math.cos(L - 2));
-        if ((sl / 0.38) ** 2 + ((lat - 0.36) / 0.13) ** 2 < 1) return { v: 0.95, k: 'qa' };
+        if ((sl / 0.38) ** 2 + ((lat - 0.36) / 0.13) ** 2 < 1) return { v: 0.95, k: 'qr' };
         const band = 0.5 + 0.5 * Math.sin(lat * 10 + (fbm(L * 1.3, lat * 5) - 0.5) * 3);
         return { v: 0.35 + 0.65 * band, k: band > 0.72 ? 'qh' : 'q' };
       }, dim);
@@ -1946,7 +2043,7 @@ function bgStep(dt, t) {
   for (const p of BG.parts) {
     p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.g * dt;
     const f = p.life / p.max;
-    set(p.x, p.y, p.dir && f > 0.55 ? p.dir : c.fade[Math.min(3, Math.floor(f * 4))], 1);
+    set(p.x, p.y, p.ch && f > 0.3 ? p.ch : p.dir && f > 0.55 ? p.dir : c.fade[Math.min(3, Math.floor(f * 4))], p.k || 1);
   }
   let html = '';
   for (let y = 0; y < rows; y++) {
@@ -1977,7 +2074,7 @@ addEventListener('pointerdown', e => {
   const dirs = ['-', '\\', '|', '/'];
   for (let i = 0; i < 18; i++) {
     const a = (i / 18) * Math.PI * 2 + Math.random() * 0.2, sp = 10 + Math.random() * 10, life = .7 + Math.random() * .5;
-    BG.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * ratio, g: 7, life, max: life,
+    BG.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * ratio, g: 0, life, max: life,
       dir: dirs[Math.round(((a % Math.PI) + Math.PI) % Math.PI / (Math.PI / 4)) % 4] });
   }
   achieve('spark');
@@ -2073,11 +2170,12 @@ function setRecruiter(on) {
 }
 
 /* ---------- page events ---------- */
-scr.addEventListener('click', e => {
+function onAct(e) {
   if (e.target.closest('.gm')) { openArcade(); return; }
   const btn = e.target.closest('[data-act]');
   if (!btn) return;
   const [act, arg] = btn.dataset.act.split(':');
+  if (act === 'tclose') { closeModal(); return; }
   if (act === 'arcade') { openArcade(); return; }
   if (act === 'recruiter') { setRecruiter(!S.recruiter); return; }
   if (act === 'rcopy') {
@@ -2091,6 +2189,7 @@ scr.addEventListener('click', e => {
     return;
   }
   if (act === 'preset') { S.preset = arg; S.custom = {}; }
+  else if (act === 'mode') { S.mode = arg; S.preset = 'system'; S.custom = {}; }
   else if (act === 'cs') { S.cs = arg; if (arg === 'ascii') achieve('ascii'); }
   else if (act === 'fx') S.fx[arg] = !S.fx[arg];
   else if (act === 'tog') { S.open[arg] = !S.open[arg]; if (EXPERIENCE.every(p => S.open[p.id])) achieve('explorer'); }
@@ -2100,13 +2199,10 @@ scr.addEventListener('click', e => {
     try { navigator.clipboard.writeText(EMAIL).then(done, selectEmail); } catch (err) { selectEmail(); }
     return;
   }
-  else if (act === 'send') {
-    const n = document.getElementById('f-name').value.trim(), m = document.getElementById('f-msg').value.trim();
-    if (n && m) location.href = `mailto:${EMAIL}?subject=${encodeURIComponent('Hello from ' + n)}&body=${encodeURIComponent(m + '\n\n' + n)}`;
-    msg.send = n && m ? 'opening your email app...' : 'fill in both fields';
-  }
   applyTheme(); save(); render();
-});
+}
+scr.addEventListener('click', onAct);
+tscr.addEventListener('click', onAct);
 function selectEmail() {
   const r = document.createRange();
   const walker = document.createTreeWalker(scr, NodeFilter.SHOW_TEXT);
@@ -2124,10 +2220,15 @@ KEYS.forEach(([k]) => {
   });
 });
 const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-let kIdx = 0;
+let kIdx = 0, typedWord = '';
 addEventListener('keydown', e => {
   if (ARC.open) return;
   const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  // typing "boom" anywhere outside a text field nukes the page
+  if (!MODAL && !e.target.closest('input, textarea')) {
+    typedWord = (typedWord + (key.length === 1 ? key : '')).slice(-4);
+    if (typedWord === 'boom') { typedWord = ''; nuke(); }
+  }
   kIdx = key === KONAMI[kIdx] ? kIdx + 1 : (key === KONAMI[0] ? 1 : 0);
   if (kIdx === KONAMI.length) { kIdx = 0; S.matrix = !S.matrix; save(); achieve('konami'); }
 });
@@ -2139,6 +2240,7 @@ new ResizeObserver(entries => {
   lastW = w; clearTimeout(rt); rt = setTimeout(render, 60);
 }).observe(document.getElementById('main'));
 addEventListener('scroll', () => { if (!motion) bgStep(0, 0); }, { passive: true });
+setInterval(spaceLayout, 60000);
 addEventListener('resize', () => { bgSize(); spaceLayout(); if (ARC.open && ARC.view === 'menu') { arcadeSize(); arcadeRender(); } });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => render());
 new MutationObserver(() => render()).observe(root, { attributes: true, attributeFilter: ['data-theme'] });

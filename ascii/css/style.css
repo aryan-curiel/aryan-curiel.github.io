@@ -11,15 +11,15 @@ img { max-width: 100%; }
   --bg: #111417;
   --fg: #d3d6d2;
   --dim: #737a76;
-  --acc: #e3a04f;
+  --acc: #818cf8;
   --hi: #ffffff;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) { --bg:#f3f4f1; --fg:#1f2523; --dim:#737a76; --acc:#b0501b; --hi:#000000; color-scheme: light; }
+  :root:not([data-theme="dark"]) { --bg:#f3f4f1; --fg:#1f2523; --dim:#737a76; --acc:#4f46e5; --hi:#000000; color-scheme: light; }
 }
-:root[data-theme="light"] { --bg:#f3f4f1; --fg:#1f2523; --dim:#737a76; --acc:#b0501b; --hi:#000000; color-scheme: light; }
+:root[data-theme="light"] { --bg:#f3f4f1; --fg:#1f2523; --dim:#737a76; --acc:#4f46e5; --hi:#000000; color-scheme: light; }
 
 html, body { background: var(--bg); color: var(--fg); }
 body { font-family: var(--mono); }
@@ -30,12 +30,12 @@ main {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-#screen, #bg, #toast, #ascreen {
+#screen, #bg, #toast, #ascreen, #tscreen {
   margin: 0; font: inherit; font-size: 14px; line-height: 1.4;
   white-space: pre; font-variant-ligatures: none;
 }
 #screen { overflow-x: auto; }
-@media (max-width: 480px) { #screen, #bg, #ascreen { font-size: 12.5px; } #toast { font-size: 12px; } }
+@media (max-width: 480px) { #screen, #bg, #ascreen, #tscreen, #fabs { font-size: 12.5px; } #toast { font-size: 12px; } }
 
 #bg {
   position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
@@ -53,6 +53,11 @@ main {
 #bg .qad { color: color-mix(in srgb, var(--acc) 24%, transparent); }
 #bg .qhd { color: color-mix(in srgb, var(--hi) 18%, transparent); }
 #bg .ql { color: color-mix(in srgb, var(--dim) 80%, transparent); }
+/* fixed natural colors that ignore the theme accent: mars and jupiter's red spot, the sun */
+#bg .qr { color: #d9603b; }
+#bg .qrd { color: color-mix(in srgb, #d9603b 30%, transparent); }
+#bg .qs { color: #e8a317; }
+#bg .qso { color: #e8702a; }
 
 .b { color: var(--dim); }
 .dim { color: var(--dim); }
@@ -96,13 +101,21 @@ main {
 }
 
 /* arcade modal */
-#arcade {
+#arcade, #themer {
   position: fixed; inset: 0; z-index: 8; display: flex; overflow: auto;
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   padding: calc(12px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
 }
-#arcade[hidden] { display: none; }
-#ascreen { margin: auto; background: var(--bg); animation: crtOpen .32s steps(5); }
+#arcade[hidden], #themer[hidden] { display: none; }
+#ascreen, #tscreen { margin: auto; background: var(--bg); animation: crtOpen .32s steps(5); }
+
+/* floating buttons: theme and curiosities */
+#fabs {
+  position: fixed; z-index: 7; font-size: 14px; line-height: 1.4; white-space: pre;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+#fabs .lk:not(:hover):not(:focus-visible):not(:active) { background: var(--bg); }
 @keyframes crtOpen { from { clip-path: inset(48% 0 48% 0); } to { clip-path: inset(0 0 0 0); } }
 
 #toast {
@@ -117,4 +130,15 @@ main {
 
 ::selection { background: var(--acc); color: var(--bg); }
 .vh { position: fixed; left: 50%; top: 40%; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .cur { animation: none; } #toast { transition: none; } #ascreen { animation: none; } }
+/* nuke: flash, shake, page hidden while its characters fly, then it redraws */
+.nuked main, .nuked #fabs { visibility: hidden; }
+.nuked body::before {
+  content: ""; position: fixed; inset: 0; z-index: 9; pointer-events: none;
+  background: #fff; animation: nukeFlash .7s ease-out forwards;
+}
+@keyframes nukeFlash { from { opacity: .9; } to { opacity: 0; } }
+.nuked #bg { animation: shake .45s steps(9); }
+@keyframes shake { 0%, 100% { transform: none; } 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-4px, -2px); } 80% { transform: translate(3px, 4px); } }
+#screen.rebuild { animation: crtOpen .5s steps(6); }
+@media (prefers-reduced-motion: reduce) { .nuked body::before { display: none; } .nuked #bg, #screen.rebuild { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .cur { animation: none; } #toast { transition: none; } #ascreen, #tscreen { animation: none; } }
