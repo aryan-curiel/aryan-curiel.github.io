@@ -65,10 +65,12 @@ const save = () => { try { localStorage.setItem('ascii-portfolio', JSON.stringif
 const achCount = () => Object.keys(S.ach).filter(k => ACH[k]).length;
 
 /* ---------- content (from aryan-curiel.github.io) ---------- */
+// Full years since first role after graduating (Sep 2018)
+const YEARS = Math.floor((Date.now() - new Date(2018, 8, 1)) / 31557600000) + '+';
 const PROFILE = {
   name: 'Aryan Curiel Pardo',
   title: 'senior software engineer & tech lead',
-  summary: 'Senior Software Engineer and Tech Lead with 8+ years of experience. I build AI-powered products, async APIs and distributed systems: LLM agents, RAG systems and FastAPI backends.'
+  summary: 'Senior Software Engineer and Tech Lead with ' + YEARS + ' years of experience. I build AI-powered products, async APIs and distributed systems: LLM agents, RAG systems and FastAPI backends.'
 };
 const EXPERIENCE = [
   { id:'frontier', co:'Frontier Teams', role:'Senior Software Engineer / Tech Lead', when:'2025 - now', dates:'Oct 2025 - present', loc:'Zaragoza, Spain', current:true,
@@ -280,7 +282,7 @@ function build(W) {
 
   // header
   const ban = banner('ARYAN').map((r, i) => [scrSlot(r, 'acc', 'ban' + i, 'blk')]);
-  const info = [[T(PROFILE.name.toLowerCase(), 'hi')], [T(PROFILE.title, 'acc')], [T('8+ years · zaragoza, spain', 'dim')], [T('llm agents · rag · fastapi', 'dim')], []];
+  const info = [[T(PROFILE.name.toLowerCase(), 'hi')], [T(PROFILE.title, 'acc')], [T(YEARS + ' years · zaragoza, spain', 'dim')], [T('ai products · python · leadership', 'dim')], []];
   if (W >= 29 + 4 + 37) push(...cols([ban, info], [29, W - 33], 4));
   else { push(...ban); blank(); push(...info.slice(0, 4)); }
   blank();
@@ -1308,7 +1310,7 @@ function shRun(s, line) {
         '   .--.      ' + PROFILE.name.toLowerCase(),
         '  |o_o |     ----------------',
         '  |:_/ |     role    tech lead',
-        ' //   \\ \\    years   8+',
+        ' //   \\ \\    years   ' + YEARS,
         '(|     | )   based   zaragoza, es',
         "/'\\_   _/`\\  stack   python, fastapi, rag",
         '\\___)=(___/  langs   ' + LANGS
@@ -2127,7 +2129,7 @@ function buildRecruiter(Wfull) {
   blank();
   out.toolbar = out.length;
   push([T(PROFILE.name.toUpperCase(), 'hi')]);
-  para('Senior Software Engineer & Tech Lead · 8+ years');
+  para('Senior Software Engineer & Tech Lead · ' + YEARS + ' years');
   para('Zaragoza, Spain (CET)', 0, 'dim');
   push(...flow(LINKS.map(([, href, label]) => A(label, href)), W, 3));
   head('Summary');

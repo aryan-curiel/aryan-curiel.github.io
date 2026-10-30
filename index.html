@@ -1280,7 +1280,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
     <div class="t-line"><span class="t-p">aryan@curiel:~$</span> <span class="t-out">cat role.txt</span></div>
     <div class="t-line t-g">Senior Software Engineer · Tech Lead</div>
     <div class="t-line"><span class="t-p">aryan@curiel:~$</span> <span class="t-out">echo $YEARS_EXP</span></div>
-    <div class="t-line t-y">8+</div>
+    <div class="t-line t-y"><span class="years-exp">8</span>+</div>
     <div class="t-line"><span class="t-p">aryan@curiel:~$</span> <span class="t-out">help</span></div>
     <div class="t-line t-out">commands: skills · stack · contact · languages · location · clear</div>
     <div class="t-line"><span class="t-p">aryan@curiel:~$</span> <span id="termCursor">▋</span></div>
@@ -1313,7 +1313,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       <div class="hero-roles" aria-label="Roles and experience">
         <span class="role-tag violet">Senior Software Engineer</span>
         <span class="role-tag cyan">Tech Lead</span>
-        <span class="role-tag amber">8+ Years</span>
+        <span class="role-tag amber"><span class="years-exp">8</span>+ Years</span>
       </div>
 
       <p class="hero-desc">
@@ -1669,6 +1669,8 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 </main>
 
 <script>
+// Full years since first role after graduating (Sep 2018)
+document.querySelectorAll('.years-exp').forEach(el => el.textContent = Math.floor((Date.now() - new Date(2018, 8, 1)) / 31557600000));
 // ── THEME ──
 const html = document.documentElement;
 const saved = localStorage.getItem('theme');
