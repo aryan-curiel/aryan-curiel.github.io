@@ -1245,9 +1245,12 @@ function shKids(p, all) {
   return [...set].sort();
 }
 const shSay = (s, t, k = '') => String(t).split('\n').forEach(l => s.out.push({ t: l, k }));
-// rm -rf / blows up the page; any other rm is refused
+// rm -rf on root, home or everything blows up the page; any other rm is refused
 function shRm(s, args) {
-  if (!args.some(a => /^-(rf|fr)$/.test(a)) || !args.some(a => a === '/' || a === '/*')) { shSay(s, 'nice try.', 'hi'); return; }
+  const has = (ch, long) => args.some(a => a === long || (/^-[a-z]+$/i.test(a) && a.toLowerCase().includes(ch)));
+  const recursive = has('r', '--recursive'), force = has('f', '--force');
+  const everything = args.some(a => ['/', '/*', '~', '~/', '~/*', '*', '.', './', '.*'].includes(a));
+  if (!(recursive && force && everything)) { shSay(s, 'nice try.', 'hi'); return; }
   shSay(s, 'removing everything...', 'hi');
   setTimeout(() => { closeArcade(); nuke(); }, 700);
 }
