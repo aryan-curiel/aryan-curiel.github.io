@@ -10,7 +10,7 @@ const root = document.documentElement;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const motion = !reduced;
 // ✏️  set your public email here (shown in the contact box and recruiter mode)
-const EMAIL = 'you@yourdomain.dev';
+const EMAIL = 'aryan.curiel@gmail.com';
 const LINKS = [['linkedin', 'https://www.linkedin.com/in/aryan-curiel/', 'linkedin.com/in/aryan-curiel'], ['github', 'https://github.com/aryan-curiel', 'github.com/aryan-curiel']];
 const rand = n => Math.floor(Math.random() * n);
 const pick = a => a[rand(a.length)];
@@ -2102,7 +2102,8 @@ scr.addEventListener('click', e => {
   }
   else if (act === 'send') {
     const n = document.getElementById('f-name').value.trim(), m = document.getElementById('f-msg').value.trim();
-    msg.send = n && m ? 'demo only, nothing was sent' : 'fill in both fields';
+    if (n && m) location.href = `mailto:${EMAIL}?subject=${encodeURIComponent('Hello from ' + n)}&body=${encodeURIComponent(m + '\n\n' + n)}`;
+    msg.send = n && m ? 'opening your email app...' : 'fill in both fields';
   }
   applyTheme(); save(); render();
 });
