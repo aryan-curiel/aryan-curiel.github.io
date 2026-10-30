@@ -977,6 +977,195 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── PRINT CONTACT BAR (screen: hidden) ── */
+.print-contact-bar { display: none; }
+
+/* ── PRINT / PDF ── */
+@media print {
+  @page { size: A4; margin: 14mm 18mm 14mm 18mm; }
+
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Force light variables regardless of saved theme */
+  :root, html[data-theme="dark"], html[data-theme="light"] {
+    --bg:        #ffffff;
+    --bg2:       #f8fafc;
+    --surface:   #ffffff;
+    --surface2:  #f1f5f9;
+    --border:    #e2e8f0;
+    --border2:   #cbd5e1;
+    --text:      #0f172a;
+    --muted:     #475569;
+    --faint:     #94a3b8;
+    --primary:   #4f46e5;
+    --primary-l: #6366f1;
+    --primary-d: #4338ca;
+    --cyan:      #0891b2;
+    --cyan-l:    #06b6d4;
+    --amber:     #d97706;
+    --amber-l:   #f59e0b;
+    --green:     #16a34a;
+    --dot-opacity: 0;
+  }
+
+  /* Hide all UI chrome */
+  .sidebar,
+  .mobile-header,
+  .mobile-menu,
+  #progress-bar,
+  .cursor,
+  .terminal,
+  .terminal-toggle,
+  .terminal-hint,
+  .toast,
+  body::before,
+  .hero-status,
+  .hero-links,
+  #hero::before,
+  #hero::after { display: none !important; }
+
+  /* Base */
+  body {
+    background: #fff;
+    color: #0f172a;
+    font-size: 10pt;
+    line-height: 1.5;
+    overflow: visible;
+  }
+  .main { margin-left: 0 !important; }
+  .container { max-width: 100%; padding: 0; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+
+  /* Hero — resume header */
+  #hero {
+    min-height: unset;
+    padding: 0 0 12pt;
+    display: block;
+  }
+  .hero-name {
+    font-size: 26pt;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 7pt;
+  }
+  .hero-name .gradient-text {
+    -webkit-text-fill-color: #4f46e5;
+    background: none;
+  }
+  .hero-roles { margin-bottom: 7pt; gap: 5px; }
+  .role-tag { font-size: 7.5pt; padding: 2px 8px; }
+  .role-tag.violet { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.2); color: #4f46e5; }
+  .role-tag.cyan   { background: rgba(6,182,212,0.07);  border-color: rgba(6,182,212,0.18);  color: #0891b2; }
+  .role-tag.amber  { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.2);  color: #d97706; }
+  .hero-desc { font-size: 9pt; color: #475569; line-height: 1.65; margin-bottom: 10pt; max-width: 100%; }
+
+  /* Print contact bar */
+  .print-contact-bar {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 6pt;
+    padding-top: 8pt;
+    border-top: 1px solid #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    color: #475569;
+    letter-spacing: 0.02em;
+  }
+  .print-contact-bar a {
+    color: #4f46e5;
+    text-decoration: none;
+  }
+  .print-contact-sep {
+    color: #cbd5e1;
+    margin: 0 10pt;
+  }
+
+  /* Sections */
+  section { padding: 12pt 0; }
+  .section-header { margin-bottom: 10pt; page-break-after: avoid; break-after: avoid; }
+  .section-label { font-size: 7.5pt; letter-spacing: 0.18em; color: #4f46e5; }
+  .section-label::before { background: #4f46e5; width: 14px; }
+  .section-title { font-size: 14pt; }
+
+  /* Timeline */
+  .timeline::before { display: none; }
+  .job {
+    grid-template-columns: 90pt 1fr;
+    gap: 0 14pt;
+    padding-bottom: 10pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .job-connector { display: none; }
+  .job-meta { padding-left: 0; padding-top: 0; }
+  .job-period { font-size: 8pt; }
+  .job-location { font-size: 8pt; }
+  .job-badge { font-size: 7pt; }
+  .job-body {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 4pt;
+    padding: 8pt 10pt;
+  }
+  .job-company { font-size: 11pt; margin-bottom: 1pt; }
+  .job-role { font-size: 8pt; margin-bottom: 6pt; color: #4f46e5; }
+  .job-context { font-size: 8pt; margin-bottom: 7pt; border-left: 2px solid #e2e8f0; padding-left: 10px; }
+  .job-stack { gap: 3px; margin-bottom: 6pt; }
+  .tag { font-size: 7pt; padding: 1px 6px; background: #f1f5f9; border-color: #e2e8f0; color: #475569; }
+  .tag.hi { background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.18); color: #4f46e5; }
+  .job-bullets { gap: 4pt; }
+  .job-bullets li { font-size: 8.5pt; color: #334155; }
+  .job-bullets li::before { color: #6366f1; }
+
+  /* Skills bento */
+  .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 7pt; }
+  .bento-card {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 4pt;
+    padding: 8pt 10pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .bento-card.wide { grid-column: span 2; }
+  .bento-icon { display: none; }
+  .bento-title { font-size: 7pt; margin-bottom: 7pt; color: #475569; }
+  .skill-pills { gap: 3px; }
+  .skill-pill { font-size: 7.5pt; padding: 2px 7px; background: #f1f5f9; border-color: #e2e8f0; color: #475569; }
+
+  /* Education */
+  .edu-card {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    gap: 20pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .edu-year-badge { background: linear-gradient(160deg, #4338ca, #4f46e5, #0891b2); border-radius: 5pt; padding: 8pt 10pt; min-width: 54pt; }
+  .edu-year-badge .y { font-size: 13pt; }
+  .edu-year-badge .sep { font-size: 7.5pt; }
+  .edu-school { font-size: 13pt; }
+  .edu-degree { font-size: 8pt; color: #4f46e5; }
+  .edu-desc { font-size: 8.5pt; }
+  .thesis-link { font-size: 8pt; }
+
+  /* Footer */
+  footer { border-top: 1px solid #e2e8f0; padding: 8pt 0; }
+  .footer-name { font-size: 10pt; }
+  .footer-name span { color: #4f46e5; }
+  .footer-links a { font-size: 7.5pt; color: #475569; }
+  .footer-copy { font-size: 7pt; color: #94a3b8; }
+}
 </style>
 </head>
 <body>
@@ -1035,6 +1224,9 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
       <a href="https://github.com/aryan-curiel" target="_blank" rel="noopener" class="social-btn" title="GitHub" aria-label="GitHub profile">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
       </a>
+      <button class="social-btn" onclick="window.print()" title="Save as PDF" aria-label="Print or save as PDF">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      </button>
     </div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark theme">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -1048,6 +1240,9 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 <header class="mobile-header" role="banner">
   <span class="mobile-logo">AC<span style="color:var(--primary-l)">.</span></span>
   <div style="display:flex;gap:8px;align-items:center">
+    <button class="mob-btn" onclick="window.print()" aria-label="Save as PDF">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    </button>
     <button class="mob-btn" id="mobTheme" aria-label="Toggle theme">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
@@ -1127,6 +1322,16 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
         from LLM agents and RAG systems to high-throughput FastAPI backends.
         I lead teams, move fast, and ship things that matter.
       </p>
+
+      <div class="print-contact-bar" aria-hidden="true">
+        <a href="mailto:aryan.curiel@gmail.com">aryan.curiel@gmail.com</a>
+        <span class="print-contact-sep">·</span>
+        <a href="https://linkedin.com/in/aryan-curiel">linkedin.com/in/aryan-curiel</a>
+        <span class="print-contact-sep">·</span>
+        <a href="https://github.com/aryan-curiel">github.com/aryan-curiel</a>
+        <span class="print-contact-sep">·</span>
+        <span>Zaragoza, Spain</span>
+      </div>
 
       <div class="hero-links">
         <a href="mailto:aryan.curiel@gmail.com" class="btn btn-primary">

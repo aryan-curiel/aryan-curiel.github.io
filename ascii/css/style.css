@@ -1,0 +1,120 @@
+/* base reset (matches the original artifact page) */
+*, *::before, *::after { box-sizing: border-box; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font-size: 14px; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+/* Layout: one monospace grid. JS measures how many columns fit and redraws every box at that width.
+   A fixed text grid behind it runs the starfield; the arcade is a modal text grid on top. */
+:root {
+  --bg: #111417;
+  --fg: #d3d6d2;
+  --dim: #737a76;
+  --acc: #e3a04f;
+  --hi: #ffffff;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --bg:#f3f4f1; --fg:#1f2523; --dim:#737a76; --acc:#b0501b; --hi:#000000; color-scheme: light; }
+}
+:root[data-theme="light"] { --bg:#f3f4f1; --fg:#1f2523; --dim:#737a76; --acc:#b0501b; --hi:#000000; color-scheme: light; }
+
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--mono); }
+main {
+  position: relative; z-index: 1;
+  max-width: 920px; margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+#screen, #bg, #toast, #ascreen {
+  margin: 0; font: inherit; font-size: 14px; line-height: 1.4;
+  white-space: pre; font-variant-ligatures: none;
+}
+#screen { overflow-x: auto; }
+@media (max-width: 480px) { #screen, #bg, #ascreen { font-size: 12.5px; } #toast { font-size: 12px; } }
+
+#bg {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  color: color-mix(in srgb, var(--dim) 55%, transparent);
+}
+#bg .p { color: var(--acc); }
+#bg .m { color: color-mix(in srgb, var(--acc) 40%, transparent); }
+#bg .mh { color: var(--hi); }
+#bg .n { color: color-mix(in srgb, var(--acc) 34%, transparent); }
+#bg .n2 { color: color-mix(in srgb, var(--fg) 14%, transparent); }
+#bg .q { color: color-mix(in srgb, var(--fg) 58%, transparent); }
+#bg .qa { color: color-mix(in srgb, var(--acc) 80%, transparent); }
+#bg .qh { color: color-mix(in srgb, var(--hi) 80%, transparent); }
+#bg .qd { color: color-mix(in srgb, var(--fg) 17%, transparent); }
+#bg .qad { color: color-mix(in srgb, var(--acc) 24%, transparent); }
+#bg .qhd { color: color-mix(in srgb, var(--hi) 18%, transparent); }
+#bg .ql { color: color-mix(in srgb, var(--dim) 80%, transparent); }
+
+.b { color: var(--dim); }
+.dim { color: var(--dim); }
+.acc { color: var(--acc); }
+.hi { color: var(--hi); font-weight: 700; }
+.lk {
+  font: inherit; line-height: inherit; color: var(--acc); background: none;
+  border: 0; padding: 0; margin: 0; cursor: pointer; text-decoration: none;
+}
+.lk:hover, .lk:focus-visible { background: var(--acc); color: var(--bg); outline: none; }
+.lk:active { background: var(--hi); color: var(--bg); }
+.lk.dim { color: var(--dim); }
+.lk.hi { color: var(--hi); }
+.lk.hi:hover, .lk.hi:focus-visible, .lk.dim:hover, .lk.dim:focus-visible { color: var(--bg); }
+.fi {
+  font: inherit; line-height: inherit; height: 1.4em; vertical-align: top;
+  color: var(--hi); background: color-mix(in srgb, var(--fg) 10%, transparent);
+  border: 0; padding: 0; margin: 0; outline: none; border-radius: 0;
+}
+.fi:focus { background: color-mix(in srgb, var(--acc) 24%, transparent); }
+.fi::placeholder { color: var(--dim); }
+.cur { color: var(--acc); animation: blink 1.05s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* game cells */
+.gm { cursor: pointer; user-select: none; -webkit-user-select: none; }
+.af { user-select: none; -webkit-user-select: none; touch-action: none; cursor: crosshair; }
+.pl { color: var(--acc); font-weight: 700; }
+.ob { color: var(--fg); }
+.coin { color: var(--hi); }
+.over { color: var(--bg); background: var(--acc); font-weight: 700; }
+.flash { color: var(--bg); background: var(--hi); }
+
+/* effects */
+.glow #screen, .glow #ascreen { text-shadow: 0 0 6px color-mix(in srgb, var(--acc) 45%, transparent); }
+.crt body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 2px, color-mix(in srgb, var(--bg) 55%, transparent) 2px 3px),
+    radial-gradient(ellipse at center, transparent 55%, color-mix(in srgb, var(--bg) 75%, transparent) 100%);
+}
+
+/* arcade modal */
+#arcade {
+  position: fixed; inset: 0; z-index: 8; display: flex; overflow: auto;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  padding: calc(12px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+}
+#arcade[hidden] { display: none; }
+#ascreen { margin: auto; background: var(--bg); animation: crtOpen .32s steps(5); }
+@keyframes crtOpen { from { clip-path: inset(48% 0 48% 0); } to { clip-path: inset(0 0 0 0); } }
+
+#toast {
+  position: fixed; z-index: 10;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg); color: var(--fg);
+  transform: translateY(160%); transition: transform .4s steps(5);
+  pointer-events: none;
+}
+#toast.show { transform: none; }
+
+::selection { background: var(--acc); color: var(--bg); }
+.vh { position: fixed; left: 50%; top: 40%; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .cur { animation: none; } #toast { transition: none; } #ascreen { animation: none; } }
