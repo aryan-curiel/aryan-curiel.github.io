@@ -316,6 +316,34 @@ body::before {
 
 .hero-inner { width: 100%; position: relative; }
 
+.fun-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 560px;
+  padding: 12px 16px;
+  margin-bottom: 28px;
+  border: 1px dashed rgba(245,158,11,0.45);
+  border-radius: 10px;
+  background: rgba(245,158,11,0.06);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: none;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.05s forwards;
+  transition: border-color .2s, background .2s, transform .2s;
+}
+.fun-banner:hover, .fun-banner:focus-visible {
+  border-color: var(--amber);
+  background: rgba(245,158,11,0.12);
+  transform: translateY(-1px);
+}
+.fun-banner strong { color: var(--amber-l); font-weight: 600; }
+.fun-banner .fun-arrow { margin-left: auto; color: var(--amber-l); transition: transform .2s; }
+.fun-banner:hover .fun-arrow { transform: translateX(4px); }
+
 .hero-status {
   display: inline-flex;
   align-items: center;
@@ -1027,6 +1055,7 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
   .toast,
   body::before,
   .hero-status,
+  .fun-banner,
   .hero-links,
   #hero::before,
   #hero::after { display: none !important; }
@@ -1298,6 +1327,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; }
 <section id="hero" aria-label="Introduction">
   <div class="container">
     <div class="hero-inner">
+
+      <a class="fun-banner" href="ascii/index.html" aria-label="Open the ASCII version of this site">
+        <span aria-hidden="true">🪐</span>
+        <span><strong>Too corporate?</strong> There's a weirder version of this site in pure ASCII, with orbiting planets, a live sun, an arcade and a few secrets.</span>
+        <span class="fun-arrow" aria-hidden="true">→</span>
+      </a>
 
       <div class="hero-status" aria-label="Availability status">
         <span class="status-dot" aria-hidden="true"></span>
